@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Freshness Prediction</title>
+    <style>
+        /* General Styling */
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* Container Styling */
+        .container {
+            background: #ffffff;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        /* Header Styling */
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #333333;
+        }
+
+        /* File Input Styling */
+        input[type="file"] {
+            display: none;
+        }
+
+        .custom-file-upload {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            color: #fff;
+            background: #007bff;
+            border: none;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            transition: background 0.3s;
+        }
+
+        .custom-file-upload:hover {
+            background: #0056b3;
+        }
+
+        /* File Name Styling */
+        #fileName {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        /* Button Styling */
+        button {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            color: #fff;
+            background: #28a745;
+            border: none;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #218838;
+        }
+
+        /* Output Styling */
+        #output {
+            margin-top: 20px;
+            font-size: 1rem;
+            color: #333;
+            text-align: center;
+        }
+
+        p {
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Image Freshness Prediction</h1>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <label class="custom-file-upload">
+                <input type="file" name="file" id="fileInput" accept="image/*" required>
+                Choose Image
+            </label>
+            <p id="fileName">No file chosen</p>
+            <button type="submit">Predict</button>
+        </form>
+        <div id="output"></div>
+    </div>
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const fileNameDisplay = document.getElementById('fileName');
+        const form = document.getElementById('uploadForm');
+        const output = document.getElementById('output');
+
+        // Update file name when a file is chosen
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                fileNameDisplay.textContent = `Selected file: ${fileInput.files[0].name}`;
+            } else {
+                fileNameDisplay.textContent = "No file chosen";
+            }
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (fileInput.files.length === 0) {
+                output.innerHTML = "<p style='color: red;'>Please upload an image.</p>";
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    output.innerHTML = `<p><strong>Freshness Index:</strong> ${(result.freshness_index)}</p>`;
+                } else {
+                    output.innerHTML = `<p style='color: red;'>Error: ${result.error}</p>`;
+                }
+            } catch (err) {
+                output.innerHTML = `<p style='color: red;'>Error: ${err.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
